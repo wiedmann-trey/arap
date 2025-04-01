@@ -9,7 +9,7 @@
 using namespace std;
 using namespace Eigen;
 
-ARAP::ARAP() {}
+ARAP::ARAP() : m_test(false) {}
 
 void ARAP::init(Eigen::Vector3f &coeffMin, Eigen::Vector3f &coeffMax)
 {

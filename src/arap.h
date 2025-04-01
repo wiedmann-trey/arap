@@ -10,6 +10,7 @@ class ARAP
 {
 private:
     Shape m_shape;
+    bool m_test;
 
 public:
     ARAP();
