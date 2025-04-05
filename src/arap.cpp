@@ -53,6 +53,8 @@ void ARAP::init(Eigen::Vector3f &coeffMin, Eigen::Vector3f &coeffMax)
         m_vert_opposite_edge[tri[2]][tri[0]].insert(tri[1]);
         m_vert_opposite_edge[tri[0]][tri[2]].insert(tri[1]);
     }
+
+    m_rotations.resize(m_vertices.size());
 }
 
 // Move an anchored vertex, defined by its index, to targetPosition
@@ -62,12 +64,13 @@ void ARAP::move(int vertex, Vector3f targetPosition)
     int n = m_vertices.size();
 
     for(int step = 0; step < 2; step++) {
-        m_rotations.clear();
 
         /* OPTIMIZE ROTATIONS */
         // to find rotation
         // build S
         // SVD of S -> gives us rotations
+
+        #pragma omp parallel for
         for(int i = 0; i < n; i++) {
             Matrix3f S = Eigen::Matrix3f::Zero();
             for(const int &j : m_adjacent[i]) {
@@ -90,7 +93,7 @@ void ARAP::move(int vertex, Vector3f targetPosition)
                 U.col(min_index) *= -1;
             }
 
-            m_rotations.push_back(V*U.transpose());
+            m_rotations[i] = V*U.transpose();
         }
 
         /* OPTIMIZE POINTS */
@@ -100,6 +103,7 @@ void ARAP::move(int vertex, Vector3f targetPosition)
         VectorXf b_y(n);
         VectorXf b_z(n);
 
+        #pragma omp parallel for
         for(int i = 0; i < n; i++) {
             if(i == vertex) {
                 b_x[i] = targetPosition[0];
@@ -135,10 +139,30 @@ void ARAP::move(int vertex, Vector3f targetPosition)
             }
         }
 
-        VectorXf new_x = m_factorization.solve(b_x);
-        VectorXf new_y = m_factorization.solve(b_y);
-        VectorXf new_z = m_factorization.solve(b_z);
+        VectorXf new_x;
+        VectorXf new_y;
+        VectorXf new_z;
 
+        // back substituting in parallel
+        #pragma omp parallel for
+        for(int i = 0; i < 3; i++) {
+            if(i==0) {
+                new_x = m_factorization.solve(b_x);
+                continue;
+            }
+
+            if(i==1) {
+                new_y = m_factorization.solve(b_y);
+                continue;
+            }
+
+            if(i==2) {
+                new_z = m_factorization.solve(b_z);
+                continue;
+            }
+        }
+
+        #pragma omp parallel for
         for(int i = 0; i < n; i++) {
             m_new_vertices[i][0] = new_x[i];
             m_new_vertices[i][1] = new_y[i];
@@ -167,6 +191,8 @@ void ARAP::startDragging() {
     // initialize weights
     // n by n, weight from i to j, symmetric
     // weight = 1/2 * sum of cotangents angles opposite of that edge
+
+    #pragma omp parallel for
     for(int i = 0; i < m_vertices.size(); i++) {
         for(const int &j : m_adjacent[i]) {
             float w = 0;
@@ -188,6 +214,7 @@ void ARAP::startDragging() {
     Eigen::SparseMatrix<float> L(n,n);
     const std::unordered_set<int>& anchors = m_shape.getAnchors();
 
+    #pragma omp parallel for
     for(int i = 0; i < n; i++) {
         if(anchors.contains(i)) {
             L.insert(i,i) = 1.f;
