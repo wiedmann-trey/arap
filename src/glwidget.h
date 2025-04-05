@@ -48,6 +48,7 @@ private:
     Camera  m_camera;
     Shader *m_defaultShader;
     Shader *m_pointShader;
+    bool m_dragging;
 
     float m_movementScaling;
     float m_vertexSelectionThreshold;

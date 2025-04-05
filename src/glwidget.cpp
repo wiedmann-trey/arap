@@ -32,7 +32,8 @@ GLWidget::GLWidget(QWidget *parent) :
     m_leftCapture(false),
     m_rightCapture(false),
     m_rightClickSelectMode(SelectMode::None),
-    m_lastSelectedVertex(-1)
+    m_lastSelectedVertex(-1),
+    m_dragging(false)
 {
     // GLWidget needs all mouse move events, not just mouse drag events
     setMouseTracking(true);
@@ -219,6 +220,10 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     // If the selected point is an anchor point
     if (m_lastSelectedVertex != -1 && m_arap.getAnchorPos(m_lastSelectedVertex, pos, ray, m_camera.getPosition())) {
         // Move it
+        if(!m_dragging) {
+            m_arap.startDragging();
+            m_dragging = true;
+        }
         m_arap.move(m_lastSelectedVertex, pos);
     } else {
         // Rotate the camera
@@ -236,6 +241,11 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
+    if(m_dragging) {
+        m_dragging = false;
+        m_arap.finishDragging();
+    }
+
     m_leftCapture = false;
     m_lastSelectedVertex = -1;
 
