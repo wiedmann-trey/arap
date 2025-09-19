@@ -7,7 +7,7 @@ https://github.com/user-attachments/assets/06302587-92f5-4a70-b8f4-be2dcddb27ea
 https://github.com/user-attachments/assets/14e355e8-6ac2-4e91-a099-4c4f285c6632
 
 
-### Key Details of Implementation
+### Implementation
 
 - [Building L Matrix](https://github.com/wiedmann-trey/arap/blob/77e369cbf97045048ab100e3341a4926d57f0a2c/src/arap.cpp#L210)
 - Apply constrains [here](https://github.com/wiedmann-trey/arap/blob/77e369cbf97045048ab100e3341a4926d57f0a2c/src/arap.cpp#L219) and [here](https://github.com/wiedmann-trey/arap/blob/77e369cbf97045048ab100e3341a4926d57f0a2c/src/arap.cpp#L129)
