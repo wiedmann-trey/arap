@@ -22,7 +22,7 @@ void ARAP::init(Eigen::Vector3f &coeffMin, Eigen::Vector3f &coeffMax)
     vector<Vector3i> triangles;
 
     // If this doesn't work for you, remember to change your working directory
-    if (MeshLoader::loadTriMesh("meshes/peter.obj", vertices, triangles)) {
+    if (MeshLoader::loadTriMesh("meshes/armadillo.obj", vertices, triangles)) {
         m_shape.init(vertices, triangles);
     }
 
